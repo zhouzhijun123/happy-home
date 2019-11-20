@@ -3,6 +3,7 @@ package model;
 import model.vote_records;
 import model.DbUtil;
 import java.util.Date;
+import javax.sql.rowset.CachedRowSet;
 import javax.swing.*;
 import java.sql.*;
 import java.util.ArrayList;
@@ -15,58 +16,86 @@ public class option_level {
     public static void addvotes(vote_records g) throws SQLException {
         //获取连接
         Connection conn = DbUtil.getConnection();
-        //sql
-        String sql = "insert into vote_records_test (id, user_id, vote_num, status, create_time) values(?, ?, ?, ?, ?)";
-        //预编译
-        PreparedStatement ptmt = conn.prepareStatement(sql); //预编译SQL，减少sql执行
+        try {
+            // 开启事务
+            conn.setAutoCommit(false);
+            //sql
+            String sql = "insert into vote_records_test (id, user_id, vote_num, status, create_time) values(?, ?, ?, ?, ?)";
+            //预编译
+            PreparedStatement ptmt = conn.prepareStatement(sql); //预编译SQL，减少sql执行
 
-        //传参
-        ptmt.setInt(1, g.getId());
-        ptmt.setString(2, g.getUser_id());
-        ptmt.setInt(3, g.getVote_num());
-        ptmt.setInt(4, g.getStatus());
-        ptmt.setDate(5, new java.sql.Date(new java.util.Date().getTime()));
+            //传参
+            ptmt.setInt(1, g.getId());
+            ptmt.setString(2, g.getUser_id());
+            ptmt.setInt(3, g.getVote_num());
+            ptmt.setInt(4, g.getStatus());
+            ptmt.setDate(5, new java.sql.Date(new java.util.Date().getTime()));
 
-        //执行
-        ptmt.execute();
-        JOptionPane.showMessageDialog(null, "成功添加记录");
+            //执行
+            ptmt.execute();
+            JOptionPane.showMessageDialog(null, "成功添加记录");
+            // 提交事务:
+            conn.commit();
+        }
+        catch (SQLException e){
+            //数据回滚
+            conn.rollback();
+        }
     }
-
+    //删
     public static void delvotes(int id) throws SQLException {
         //获取连接
         Connection conn = DbUtil.getConnection();
-        //sql, 每行加空格
-        String sql = "delete from vote_records_test where id=?";
-        //预编译SQL，减少sql执行
-        PreparedStatement ptmt = conn.prepareStatement(sql);
+        try {
+            // 开启事务
+            conn.setAutoCommit(false);
+            //sql, 每行加空格
+            String sql = "delete from vote_records_test where id=?";
+            //预编译SQL，减少sql执行
+            PreparedStatement ptmt = conn.prepareStatement(sql);
 
-        //传参
-        ptmt.setInt(1, id);
+            //传参
+            ptmt.setInt(1, id);
 
-        //执行
-        ptmt.execute();
-        JOptionPane.showMessageDialog(null, "成功删除id为"+id+"的记录");
-
+            //执行
+            ptmt.execute();
+            JOptionPane.showMessageDialog(null, "成功删除id为" + id + "的记录");
+            // 提交事务:
+            conn.commit();
+        }catch (SQLException e){
+            //数据回滚
+            conn.rollback();
+        }
     }
     //查
     public static vote_records query(int id) throws SQLException {
         vote_records g=null;
         exitData(id);
         Connection conn = DbUtil.getConnection();
-        Statement stmt = conn.createStatement();
-        String sql=("SELECT * FROM vote_records_test WHERE id=?");
-        PreparedStatement ptmt = conn.prepareStatement(sql);
-        ptmt.setInt(1, id);
-        ResultSet rs = ptmt.executeQuery();
-        while(rs.next()) {
-            g = new vote_records();
-            g.setUser_id(rs.getString("user_id"));
-            g.setVote_num(rs.getInt("vote_num"));
-            g.setId(rs.getInt("id"));
-            g.setStatus(rs.getInt("status"));
-            g.setCreate_time(rs.getDate("create_time"));
+        try {
+            // 开启事务
+            conn.setAutoCommit(false);
+            Statement stmt = conn.createStatement();
+            String sql = ("SELECT * FROM vote_records_test WHERE id=?");
+            PreparedStatement ptmt = conn.prepareStatement(sql);
+            ptmt.setInt(1, id);
+            ResultSet rs = ptmt.executeQuery();
+            while (rs.next()) {
+                g = new vote_records();
+                g.setUser_id(rs.getString("user_id"));
+                g.setVote_num(rs.getInt("vote_num"));
+                g.setId(rs.getInt("id"));
+                g.setStatus(rs.getInt("status"));
+                g.setCreate_time(rs.getDate("create_time"));
+            }
+            JOptionPane.showMessageDialog(null, "查询成功");
+            // 提交事务:
+            conn.commit();
+
+        }catch (SQLException e){
+            //数据回滚
+            conn.rollback();
         }
-        JOptionPane.showMessageDialog(null, "查询成功");
         return g;
     }
     //改
@@ -75,20 +104,30 @@ public class option_level {
         //获取连接
         Connection conn = DbUtil.getConnection();
         //sql, 每行加空格
-        String sql = "update vote_records_test set vote_num=?  where id=?";
-        //预编译SQL，减少sql执行
-        PreparedStatement ptmt = conn.prepareStatement(sql);
-        //传参
-        ptmt.setInt(1, new_num);
-        ptmt.setInt(2, id);
-        //执行
-        int rs = ptmt.executeUpdate();
-        if(rs>0) {
-            JOptionPane.showMessageDialog(null, "成功修改id为"+id+"的记录");
+        try {
+            // 开启事务
+            conn.setAutoCommit(false);
 
-        }else {
-            JOptionPane.showMessageDialog(null, "修改id为"+id+"的记录失败");
+            String sql = "update vote_records_test set vote_num=?  where id=?";
+            //预编译SQL，减少sql执行
+            PreparedStatement ptmt = conn.prepareStatement(sql);
+            //传参
+            ptmt.setInt(1, new_num);
+            ptmt.setInt(2, id);
+            //执行
+            int rs = ptmt.executeUpdate();
+            if (rs > 0) {
+                JOptionPane.showMessageDialog(null, "成功修改id为" + id + "的记录");
 
+            } else {
+                JOptionPane.showMessageDialog(null, "修改id为" + id + "的记录失败");
+
+            }
+            // 提交事务:
+            conn.commit();
+        }catch (SQLException e){
+            //数据回滚
+            conn.rollback();
         }
     }
     //建表
@@ -96,6 +135,8 @@ public class option_level {
         //获取连接
         Connection conn = DbUtil.getConnection();
         try {
+            // 开启事务
+            conn.setAutoCommit(false);
             String sql = "create table "+tabName+"(id int auto_increment primary key not null";
             if(tab_fields!=null&&tab_fields.length>0){
                 sql+=",";
@@ -115,17 +156,26 @@ public class option_level {
             PreparedStatement ptmt = conn.prepareStatement(sql);
             ptmt.executeUpdate(sql);
             ptmt.close();
+            // 提交事务:
+            conn.commit();
+
             conn.close();  //关闭数据库连接
             JOptionPane.showMessageDialog(null, "成功建立名为"+tabName+"的表");
+
         } catch (SQLException e) {
             System.out.println("建表失败" + e.getMessage());
+            //数据回滚
+            conn.rollback();
         }
     }
     //数据是否存在
-    public static boolean exitData(int id){
+    public static boolean exitData(int id) throws SQLException {
         boolean flag = false;
         Connection conn = DbUtil.getConnection();
         try {
+            // 开启事务
+            conn.setAutoCommit(false);
+
             String sql = "SELECT * FROM vote_records_test WHERE id=?";
             //预处理SQL 防止注入
             PreparedStatement ptmt = conn.prepareStatement(sql);
@@ -133,16 +183,22 @@ public class option_level {
             flag = ptmt.execute();
             //关闭流
             ptmt.close();
+            // 提交事务:
+            conn.commit();
         } catch (SQLException e) {
             System.out.println("删除数据失败,表不存在" + e.getMessage());
+            //数据回滚
+            conn.rollback();
         }
         return flag;
     }
     //表是否存在
-    public static boolean exitTable(String tabName){
+    public static boolean exitTable(String tabName) throws SQLException {
         boolean flag = false;
         Connection conn = DbUtil.getConnection();
         try {
+            // 开启事务
+            conn.setAutoCommit(false);
             String sql = "select * from "+tabName+";";
             //预处理SQL 防止注入
             PreparedStatement ptmt = conn.prepareStatement(sql);
@@ -150,7 +206,11 @@ public class option_level {
             flag = ptmt.execute();
             //关闭流
             ptmt.close();
+            // 提交事务:
+            conn.commit();
         } catch (SQLException e) {
+            //数据回滚
+            conn.rollback();
             JOptionPane.showMessageDialog(null, "数据表不存在");
             System.out.println("删除数据失败,表不存在" + e.getMessage());
         }
@@ -161,21 +221,31 @@ public class option_level {
         //获取连接
         Connection conn = DbUtil.getConnection();
         try {
+            // 开启事务
+            conn.setAutoCommit(false);
             String sql = "drop table "+tabName+";";
             PreparedStatement ptmt = conn.prepareStatement(sql);
             ptmt.execute();
             ptmt.close();
             JOptionPane.showMessageDialog(null, "名为" + tabName + "的表删除成功");
+            // 提交事务:
+            conn.commit();
         }
         catch (SQLException e) {
+            //数据回滚
+            conn.rollback();
             System.out.println("删除数据表失败" + e.getMessage());
         }
         }
     //连接表
-    public static void joinTables(String[] tableNames) {
+    public static void joinTables(String[] tableNames) throws SQLException {
         //获取连接
         Connection conn = DbUtil.getConnection();
+
         try {
+            //开启事务
+            conn.setAutoCommit(false);
+
             String sql = "select " + tableNames[0] + ".*," + tableNames[1] + ".* FROM " + tableNames[0] + "," + tableNames[1] + " WHERE " + tableNames[0] + ".id=" + tableNames[1] + ".id;";
             PreparedStatement ptmt = conn.prepareStatement(sql);
             ResultSet rs = ptmt.executeQuery(sql);
@@ -198,7 +268,10 @@ public class option_level {
             }
             JOptionPane.showMessageDialog(null, "连接成功");
 
+            // 提交事务:
+            conn.commit();
         } catch (SQLException e) {
+            conn.rollback();
             e.printStackTrace();
         }
     }
@@ -207,7 +280,7 @@ public class option_level {
             int id;
             int new_num;
             String data;
-            String[] choices = {"[0] 增", "[1] 删", "[2] 改", "[3] 查","[4] 建表","[5] 删表","[6] 连接表"};
+            String[] choices = {"[0] 增加数据", "[1] 删除数据", "[2] 修改数据", "[3] 查找数据","[4] 建表","[5] 删表","[6] join两个表"};
             menuTool a = new menuTool();
 
             int choice = a.input_choice(choices);
