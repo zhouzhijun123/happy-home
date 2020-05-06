@@ -5,4 +5,5 @@ option_level 是功能实现和主函数类
 menuTool 是实现菜单的类
 DbUtil 是实现连接的类
 然后你们是无法连接上我的数据库的，所以如果要操作的话还需要我设置用户给你们，你们修改那个代码里面的DbUtil的链接
-
+# 图书web
+图书web是使用java开发的网页，使用的技术有jdbc,servlet，jsp等。
